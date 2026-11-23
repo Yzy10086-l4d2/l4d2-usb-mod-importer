@@ -66,9 +66,7 @@ namespace Installer
             bool uiTree = false;
             bool mapShot = false;
             bool loadShot = false;
-            bool downsShot = false;
             bool mainShot = false;
-            bool gallerySelf = false;
             bool langSelf = false;
             bool mapSelf = false;
             bool scanRace = false;
@@ -84,11 +82,6 @@ namespace Installer
             bool uiCatForm = false;
             bool uiAddons = false;
             bool uiKeys = false;
-            bool wsSelf = false;
-            string wsNet = null;
-            string wsSearch = null;
-            bool uiWorkshop = false;
-            bool uiGallery = false;
             int deskServe = 0;
             bool deskSelf = false;
             bool deskLaunch = false;
@@ -139,7 +132,6 @@ namespace Installer
                 else if (string.Equals(a, "--treeshot", StringComparison.OrdinalIgnoreCase)) { mapShot = true; uiTest = true; }
                 // 诊断截图：把「读取中」的启动占位截一张，确认步骤文案与进度条在真机上好看
                 else if (string.Equals(a, "--loadshot", StringComparison.OrdinalIgnoreCase)) { loadShot = true; uiTest = true; }
-                else if (string.Equals(a, "--downsshot", StringComparison.OrdinalIgnoreCase)) { downsShot = true; uiTest = true; }
                 else if (string.Equals(a, "--mainshot", StringComparison.OrdinalIgnoreCase)) { mainShot = true; uiTest = true; }
                 else if (string.Equals(a, "--treeself", StringComparison.OrdinalIgnoreCase)) { mapSelf = true; uiTest = true; }
                 else if (string.Equals(a, "--scanrace", StringComparison.OrdinalIgnoreCase)) { scanRace = true; uiTest = true; }
@@ -158,15 +150,6 @@ namespace Installer
                 else if (string.Equals(a, "--uicatform", StringComparison.OrdinalIgnoreCase)) uiCatForm = true;
                 else if (string.Equals(a, "--uiaddons", StringComparison.OrdinalIgnoreCase)) uiAddons = true;
                 else if (string.Equals(a, "--uikeys", StringComparison.OrdinalIgnoreCase)) { uiKeys = true; uiTest = true; }
-                // 工坊自检：只测解析/文件名/JSON，不联网
-                else if (string.Equals(a, "--workshopself", StringComparison.OrdinalIgnoreCase)) wsSelf = true;
-                // 工坊联网端到端：查一次、下一次、校验后删除，不落库
-                else if (a.StartsWith("--workshopnet=", StringComparison.OrdinalIgnoreCase)) wsNet = a.Substring(14).Trim();
-                else if (a.StartsWith("--workshopsearch=", StringComparison.OrdinalIgnoreCase)) wsSearch = a.Substring(17).Trim();
-                // 诊断截图：打开工坊窗口、填假数据、存 workshop.png，不联网
-                else if (string.Equals(a, "--workshopui", StringComparison.OrdinalIgnoreCase)) { uiWorkshop = true; uiTest = true; }
-                else if (string.Equals(a, "--galleryui", StringComparison.OrdinalIgnoreCase)) { uiGallery = true; uiTest = true; }
-                else if (string.Equals(a, "--gallerself", StringComparison.OrdinalIgnoreCase)) { gallerySelf = true; uiTest = true; }
                 else if (string.Equals(a, "--langself", StringComparison.OrdinalIgnoreCase)) { langSelf = true; uiTest = true; }
                 else if (a.StartsWith("--deskserve=", StringComparison.OrdinalIgnoreCase)) { int.TryParse(a.Substring(12), out deskServe); uiTest = true; }
                 else if (string.Equals(a, "--deskself", StringComparison.OrdinalIgnoreCase)) { deskSelf = true; uiTest = true; }
@@ -206,12 +189,12 @@ namespace Installer
             // 以前这行写在所有自检分支后面，等于对它们全部无效。
             Core.SelfTesting = selfTest || uiTest || copyTest || tweakSelf || launchSelf || dupSelf
                             || addonSelf || safeSelf || dumpId || dumpTree || ovDump || recogSelf || plugSelf || plugTry != null
-                            || mapShot || mapSelf || scanRace || layoutSelf || wsSelf || wsNet != null || wsSearch != null
+                            || mapShot || mapSelf || scanRace || layoutSelf
                             || dumpIdTo != null || idCheckTo != null;
 
             // 单实例只约束界面模式：已经开着就把那个窗口叫到前面来。
-            // 用 Core.SelfTesting 判，不再手写参数清单 —— 以前漏了 --workshopself / --layoutself /
-            // --workshopnet=… / --wssearch=…，GUI 开着时跑这些自检会激活旧窗口然后 return 0，
+            // 用 Core.SelfTesting 判，不再手写参数清单 —— 以前漏了 --layoutself / --langself 之类，
+            // GUI 开着时跑这些自检会激活旧窗口然后 return 0，
             // CI 拿到 exit 0 误以为自检通过。
             bool created;
             Mutex only = new Mutex(true, "L4D2Setup_SingleInstance", out created);
@@ -264,29 +247,9 @@ namespace Installer
                     foreach (float k in scales) bad += lf.LayoutSelfTest(k, 1440, 940);
                     foreach (float k in scales) bad += lf.LayoutSelfTest(k, 1120, 740);
                     bad += lf.TriPaneSelfTest();          // 右半并排：树 / 候选 / 扩展 三栏
-                    bad += lf.WorkshopSmoke();            // 工坊窗口：构造 + 填样例 + 换尺寸
                     Console.WriteLine("layoutself failures = " + bad);
                     return bad == 0 ? 0 : 1;
                 }
-            }
-            if (wsSelf)
-            {
-                // 工坊自检：纯离线，测链接解析、文件名清理、JSON 提取。
-                int badw = Workshop.SelfTest();
-                Console.WriteLine("workshopself failures = " + badw);
-                return badw == 0 ? 0 : 1;
-            }
-            if (wsNet != null)
-            {
-                int badn = Workshop.NetTest(wsNet);
-                Console.WriteLine("workshopnet failures = " + badn);
-                return badn == 0 ? 0 : 1;
-            }
-            if (wsSearch != null)
-            {
-                int bads = Workshop.SearchTest(wsSearch);
-                Console.WriteLine("workshopsearch failures = " + bads);
-                return bads == 0 ? 0 : 1;
             }
             if (dumpIdTo != null)
             {
@@ -590,7 +553,6 @@ namespace Installer
                     if (uiLogOpen && !uiDrawer) { f.SetLogOpen(true); System.Windows.Forms.Application.DoEvents(); }
                     if (mapShot) { f.OverviewShot(); System.Windows.Forms.Application.DoEvents(); return 0; }
                     if (loadShot) { f.LoadingShot(); System.Windows.Forms.Application.DoEvents(); return 0; }
-                    if (downsShot) { f.DownsShot(); System.Windows.Forms.Application.DoEvents(); return 0; }
                     if (mainShot) { f.MainShot(); System.Windows.Forms.Application.DoEvents(); return 0; }
                     if (scanRace) { f.ScanRaceTest(); System.Windows.Forms.Application.DoEvents(); return 0; }
                     if (mapSelf)
@@ -635,10 +597,7 @@ namespace Installer
                         Console.WriteLine("themeself failures = " + bad);
                         return bad == 0 ? 0 : 1;
                     }
-                    if (uiWorkshop) { f.WorkshopShot(); System.Windows.Forms.Application.DoEvents(); return 0; }
                     if (langSelf) { f.LangSelf(); System.Windows.Forms.Application.DoEvents(); return 0; }
-                    if (gallerySelf) { int badg = f.GallerySelf(); System.Windows.Forms.Application.DoEvents(); return badg == 0 ? 0 : 1; }
-                    if (uiGallery) { f.GalleryShot(); System.Windows.Forms.Application.DoEvents(); return 0; }
                     if (uiFilter != null) { f.UiTestFilter(uiFilter); System.Windows.Forms.Application.DoEvents(); }
                     if (uiDeep != null) { f.UiTestFilter(uiDeep); System.Windows.Forms.Application.DoEvents(); f.UiTestDeep(); System.Windows.Forms.Application.DoEvents(); }
                     System.IO.File.WriteAllText(System.IO.Path.Combine(Core.LogDir, "uitest.txt"), f.LayoutDump(), new System.Text.UTF8Encoding(true));

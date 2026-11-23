@@ -115,7 +115,6 @@ namespace Installer
             Add(d, "自动找", "Auto-detect");
             Add(d, "面板", "Panel");
             Add(d, "总览", "Overview");
-            Add(d, "工坊", "Workshop");
             Add(d, "设置", "Settings");
             Add(d, "目录不对：里面没有 left4dead2.exe", "Wrong folder: left4dead2.exe not found");
 
@@ -263,7 +262,6 @@ namespace Installer
             Add(d, "保存后立即生效，不改已经装进游戏的文件。", "Takes effect right after saving; installed game files are untouched.");
             Add(d, "（点卡片看介绍）", "(Click a card for details)");
             Add(d, "← 返回", "← Back");
-            Add(d, "下载这个 MOD", "Download this mod");
             Add(d, "在浏览器打开", "Open in browser");
             Add(d, "看原文", "Show original");
             Add(d, "看译文", "Show translation");
@@ -294,7 +292,6 @@ namespace Installer
             Add(d, "当前：{0}", "Current: {0}");
             Add(d, "可叠加的扩展：{0}", "Stackable extras: {0}");
             Add(d, "{0} 页", "Page {0}");
-            Add(d, "下载列表 ({0})", "Downloads ({0})");
 
             // ---------- 第三批：自检剩余项 ----------
             Add(d, "● 可以开始安装", "● Ready to install");
@@ -302,8 +299,6 @@ namespace Installer
             Add(d, "附加目录：无", "Extra folders: none");
             Add(d, "Language / 语言", "Language");
 
-            Add(d, "还没从工坊下过东西。\r\n在左边卡片上点「下载这个 MOD」，下完就会出现在这里。",
-                "Nothing downloaded from the Workshop yet.\r\nClick \"Download this mod\" on a card and it shows up here.");
             Add(d, "    默认位置（跟随主库）", "    default (follows library)");
             Add(d, "已选 {0} 个 MOD{1}  ·  {2}  ·  约 {3} 秒（按 {4:0} MB/s）",
                 "Selected {0} mods{1}  ·  {2}  ·  ~{3}s (at {4:0} MB/s)");
@@ -332,18 +327,11 @@ namespace Installer
             Add(d, "已选", "Selected");
             Add(d, "分类", "Category");
             Add(d, "全部物品", "All items");
-            Add(d, "正在搜工坊…", "Searching the Workshop…");
             Add(d, "正在加载…", "Loading…");
-            Add(d, "下载列表", "Downloads");
-            Add(d, "批量下载", "Batch download");
-            Add(d, "下载", "Download");
-            Add(d, "已下载", "Downloaded");
             Add(d, "失败", "Failed");
             Add(d, "中断", "Interrupted");
-            Add(d, "下载中", "Downloading");
             Add(d, "时间", "Time");
             Add(d, "状态", "Status");
-            Add(d, "重新下载", "Download again");
             Add(d, "打开所在位置", "Show in folder");
             Add(d, "从磁盘删除", "Delete from disk");
             Add(d, "清空历史", "Clear history");
@@ -361,7 +349,6 @@ namespace Installer
             Add(d, "中文", "中文 (Chinese)");
             Add(d, "English", "English");
             Add(d, "减少动效", "Reduce motion");
-            Add(d, "工坊下载位置", "Workshop download folder");
 
             // ---------- 左栏：游戏现状 ----------
             Add(d, "游戏现状", "In game now");

@@ -78,7 +78,6 @@ namespace Installer
         // 启动时如果一条勾选都没有（换机器、U 盘配置是空的），就按游戏 addons + addonlist.txt
         // 里「真的在用」的那批回填，而不是让人对着 63 个空行自己猜上次装了哪些。
         public bool AutoSync = true;
-        public string WorkshopDir = "";     // 工坊下载位置；空 = 跟随主库（U 盘库/_创意工坊 或 游戏 addons/_创意工坊）
         public string Lang = "zh";          // 界面语言：zh / en（只影响显示，日志与自检保持中文）
         public List<string> ModDirs = new List<string>();   // 额外的 MOD 库文件夹（任意电脑上的任意目录）
         public List<string> Recent = new List<string>();
@@ -546,7 +545,6 @@ namespace Installer
                     else if (k == "PkgRoot") Cfg.PkgRoot = v;
                     else if (k == "Drawer") Cfg.DrawerOpen = (v != "0");
                     else if (k == "AutoSync") Cfg.AutoSync = (v != "0");
-                    else if (k == "WorkshopDir") Cfg.WorkshopDir = v;
                     else if (k == "Lang") Cfg.Lang = (string.Equals(v, "en", StringComparison.OrdinalIgnoreCase) ? "en" : "zh");
                     else if (k == "ModDir") Cfg.ModDirs.Add(v);
                     else if (k == "Recent") Cfg.Recent.Add(v);
@@ -586,7 +584,6 @@ namespace Installer
                 sb.AppendLine("Drawer=" + (Cfg.DrawerOpen ? "1" : "0"));
                 sb.AppendLine("AutoSync=" + (Cfg.AutoSync ? "1" : "0"));
                 sb.AppendLine("Lang=" + Cfg.Lang);
-                sb.AppendLine("WorkshopDir=" + Cfg.WorkshopDir);
                 foreach (string d in Cfg.ModDirs) sb.AppendLine("ModDir=" + d);
                 foreach (string rp in Cfg.Recent) sb.AppendLine("Recent=" + rp);
                 sb.AppendLine("[mods]");
@@ -632,32 +629,6 @@ namespace Installer
             return true;
         }
 
-        /// <summary>
-        /// 工坊下载位置。传空 = 恢复「跟随主库」。
-        /// 目录不存在就建：用户常直接填 U 盘上的新文件夹，不该因为"还没建"就被拒。
-        /// </summary>
-        public static bool SetWorkshopDir(string path, bool save)
-        {
-            string p = (path ?? "").Trim().TrimEnd('\\');
-            if (p.Length == 0)
-            {
-                Cfg.WorkshopDir = "";
-                if (save) SaveConfig();
-                return true;
-            }
-            try
-            {
-                if (!Directory.Exists(p)) Directory.CreateDirectory(p);
-            }
-            catch (Exception ex)
-            {
-                Log("WARN", "工坊下载位置不可用: " + p + "（" + ex.Message + "）");
-                return false;
-            }
-            Cfg.WorkshopDir = p;
-            if (save) SaveConfig();
-            return true;
-        }
 
         // ---------------- 找游戏 ----------------
         // 本地模式：游戏目录 addons 直接当库用，删除放行、装机只翻开关
@@ -870,8 +841,6 @@ namespace Installer
                 case "三方地图": return "地图";
                 case "医疗物品": return "医疗";
                 case "杂项功能": return "杂项";
-                // 工坊下载落的目录：下划线只是避免和用户的目录重名，界面上不该看见它
-                case "_创意工坊": return "创意工坊";
             }
             return n;
         }

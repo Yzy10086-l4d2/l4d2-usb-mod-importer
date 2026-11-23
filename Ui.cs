@@ -13,7 +13,6 @@ namespace Installer
         private ComboBox txtGame;
         private FlatButton btnBrowse, btnFind, btnSettings, btnInstall, btnRestore, btnOpen, btnSwitch, btnCancel, btnClearSearch;
         private FlatButton btnView, btnPanel;     // 顶部：台面/方案树 切换、左栏抽屉
-        private FlatButton btnWorkshop;           // 顶部：从创意工坊导入
         private bool drawerOpen;                  // 左栏（装什么 / 安装选项 / 日志）是否展开
         private FlatButton btnLogToggle;          // 左栏「显示日志 / 收起日志」
         private Label lblLibInfo;                 // 左栏底部一行库信息，别让下半屏空着
@@ -385,7 +384,7 @@ namespace Installer
             if (Core.ModList.Count == 0)
             {
                 lblStatus.ForeColor = Theme.Ink3;
-                lblStatus.Text = Lang.S("库里还没有 MOD：点右上「工坊」搜索下载，或把 .vpk 所在文件夹设成 MOD 主库");
+                lblStatus.Text = Lang.S("库里还没有 MOD：把 .vpk 所在文件夹设成 MOD 主库，或直接把 vpk 拷进库目录");
                 emptyStatusShown = true;
                 return;
             }
@@ -467,11 +466,9 @@ namespace Installer
             const int settingsW = 60;
             const int viewW = 56;       // 台面 ⇄ 方案树
             const int panelW = 56;      // 左栏抽屉
-            const int wsW = 64;         // 工坊导入
             const int topGap = 8;
             int settingsX = W - Theme.M - settingsW;
-            int wsX = settingsX - topGap - wsW;
-            int panelX = wsX - topGap - panelW;
+            int panelX = settingsX - topGap - panelW;
             int viewX = panelX - topGap - viewW;
             int findX = viewX - topGap - findW;
             int browseX = findX - topGap - browseW;
@@ -481,14 +478,6 @@ namespace Installer
             txtGame.TextChanged += delegate { QueuePrecheck(); };   // 手输路径时底栏那句提示跟着变
             btnBrowse = new FlatButton(); btnBrowse.Soft = true; btnBrowse.Text = Lang.S("浏览…"); btnBrowse.SetBounds(browseX, 16, browseW, Theme.H); btnBrowse.Click += delegate { BrowseGame(); }; Controls.Add(btnBrowse);
             btnFind = new FlatButton(); btnFind.Soft = true; btnFind.Text = Lang.S("自动找"); btnFind.SetBounds(findX, 16, findW, Theme.H); btnFind.Click += delegate { FindGame(); }; Controls.Add(btnFind);
-            // 工坊导入：入口放顶栏而不是藏在设置里 —— 这是「往库里加东西」的主路径之一
-            btnWorkshop = new FlatButton(); btnWorkshop.Text = Lang.S("工坊");
-            btnWorkshop.SetBounds(wsX, 16, wsW, Theme.H);
-            btnWorkshop.AccessibleName = "从创意工坊导入";
-            btnWorkshop.Click += delegate { OpenWorkshop(); };
-            tips.SetToolTip(btnWorkshop, "从 Steam 创意工坊导入：粘贴物品或合集链接，直接下到 MOD 库里。\r\n"
-                + "L4D2 的物品都是单个 vpk，能直接下，不需要 Steam 登录。");
-            Controls.Add(btnWorkshop);
 
             btnSettings = new FlatButton(); btnSettings.Text = Lang.S("设置");
             btnSettings.SetBounds(settingsX, 16, settingsW, Theme.H);
@@ -2308,7 +2297,7 @@ namespace Installer
             List<string> found = new List<string>();
             CollectCjk(this, found, "主窗口");
 
-            // 设置 / 下载列表 / 工坊：这三处是用户点得最多的二级界面
+            // 设置：用户点得最多的二级界面
             try
             {
                 using (SettingsForm sf = new SettingsForm(this))
@@ -2322,31 +2311,6 @@ namespace Installer
             }
             catch (Exception ex) { Core.Log("WARN", "LANGSELF 设置窗口: " + ex.Message); }
 
-            try
-            {
-                using (DownloadListForm df = new DownloadListForm())
-                {
-                    df.Show();
-                    for (int i = 0; i < 6; i++) { Application.DoEvents(); System.Threading.Thread.Sleep(60); }
-                    CollectCjk(df, found, "下载列表");
-                    Shot(df, "lang-downloads");
-                    df.Close();
-                }
-            }
-            catch (Exception ex) { Core.Log("WARN", "LANGSELF 下载列表: " + ex.Message); }
-
-            try
-            {
-                using (GalleryForm gf = new GalleryForm(this))
-                {
-                    gf.Show();
-                    for (int i = 0; i < 8; i++) { Application.DoEvents(); System.Threading.Thread.Sleep(60); }
-                    CollectCjk(gf, found, "工坊");
-                    Shot(gf, "lang-gallery");
-                    gf.Close();
-                }
-            }
-            catch (Exception ex) { Core.Log("WARN", "LANGSELF 工坊窗口: " + ex.Message); }
 
             Shot(this, "lang-main");
 
@@ -2469,169 +2433,7 @@ namespace Installer
             catch (Exception ex) { Core.Log("FAIL", "LOAD 截图失败: " + ex.Message); }
         }
 
-        /// <summary>诊断截图：把导入窗口填满假数据存一张 PNG，不发请求。</summary>
-        internal void WorkshopShot()
-        {
-            using (WorkshopForm f = new WorkshopForm(this))
-            {
-                f.FillSample();
-                f.Show();
-                Application.DoEvents();
-                Application.DoEvents();
-                try
-                {
-                    using (Bitmap b = new Bitmap(f.Width, f.Height))
-                    {
-                        f.DrawToBitmap(b, new Rectangle(0, 0, b.Width, b.Height));
-                        b.Save(System.IO.Path.Combine(Core.LogDir, "workshop.png"),
-                               System.Drawing.Imaging.ImageFormat.Png);
-                    }
-                    Core.Log("INFO", "WS 截图已保存 workshop.png（" + f.Width + "x" + f.Height + "）");
-                }
-                catch (Exception ex) { Core.Log("FAIL", "WS 截图失败: " + ex.Message); }
-                f.Close();
-            }
-        }
 
-        /// <summary>
-        /// 工坊窗口冒烟：构造 + 填样例 + 换两次尺寸，不联网、不截图。
-        /// 加这条是因为 v2.53.1 真栽在这儿 —— 构造函数里一个字段忘了 new，编译器不报，
-        /// --layoutself 又不构造工坊窗口，结果一点「工坊」就 NRE 崩掉。
-        /// </summary>
-        internal int WorkshopSmoke()
-        {
-            try
-            {
-                using (WorkshopForm f = new WorkshopForm(this))
-                {
-                    f.FillSample();
-                    f.ClientSize = new Size(Dpi.S(940), Dpi.S(600));
-                    f.ClientSize = new Size(Dpi.S(1360), Dpi.S(820));
-                    Application.DoEvents();
-                }
-                Core.Log("INFO", "WSM 工坊窗口：构造 / 填样例 / 两种尺寸重排 都正常");
-            }
-            catch (Exception ex)
-            {
-                Core.Log("FAIL", "WSM 工坊窗口塌了: " + ex.GetType().Name + " " + ex.Message);
-                return 1;
-            }
-
-            // 画廊是新页面，同样得在自检里真的构造一次 —— 上一次工坊窗口就是漏了这步，
-            // 结果「字段忘了 new」这种 NRE 一路混到 release 才被截图发现。
-            try
-            {
-                using (GalleryForm g = new GalleryForm(this))
-                {
-                    g.FillSample();
-                    g.ClientSize = new Size(Dpi.S(900), Dpi.S(620));
-                    g.ClientSize = new Size(Dpi.S(1400), Dpi.S(880));
-                    g.ShowDetailForTest(0);
-                    g.ClientSize = new Size(Dpi.S(1180), Dpi.S(780));
-                    Application.DoEvents();
-                }
-                Core.Log("INFO", "GAL 画廊：构造 / 样例卡片 / 详情页 / 三种尺寸重排 都正常");
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Core.Log("FAIL", "GAL 画廊塌了: " + ex.GetType().Name + " " + ex.Message);
-                return 1;
-            }
-        }
-
-        /// <summary>
-        /// 创意工坊：独立窗口（非模态），主窗口照常能用 —— 下载期间照样翻树、拖未归类的 MOD。
-        /// 同一时刻只开一个：再点「工坊」把已有窗口提到前面。关窗时下载过才重扫库。
-        /// </summary>
-        private WorkshopForm wsWindow;
-        private GalleryForm galleryWindow;    // 画廊页面（顶栏「工坊」进的就是它）
-
-        /// <summary>
-        /// 画廊自检：建窗 + 样例数据 + 截图（卡片墙一张、详情页一张）。
-        /// 样例模式不联网，缩略图用代码画的色块，能看出卡片比例与裁切对不对。
-        /// </summary>
-        /// <summary>自检：工坊骨架是否铺满视口（不缺口）。返回失败条数。</summary>
-        internal int GallerySelf()
-        {
-            for (int i = 0; i < 200 && !Ready; i++) { Application.DoEvents(); System.Threading.Thread.Sleep(20); }
-            using (GalleryForm f = new GalleryForm(this))
-            {
-                f.Show();
-                Application.DoEvents();
-                int bad = f.SkeletonSelfTest();
-                f.Close();
-                return bad;
-            }
-        }
-
-        internal void GalleryShot()
-        {
-            using (GalleryForm f = new GalleryForm(this))
-            {
-                f.FillSample();
-                f.Show();
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "gallery");
-                // 滚动验证：同一窗口滚一段再截一张 —— 两张图内容不同才说明滚动真的在动
-                f.ScrollForTest(Dpi.S(420));
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "gallery-scrolled");
-                f.ScrollForTest(0);
-                f.ShowDetailForTest(0);
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "gallery-detail");
-                // 第三条：脏数据（没有预览图 / 没有介绍 / 没有直链）的空态，看占位文案会不会缺
-                f.ShowDetailForTest(int.MaxValue);
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "gallery-nopreview");
-                // 骨架屏：搜索中应该立刻有占位卡，而不是一面空墙
-                f.SkeletonForTest();
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "gallery-skeleton");
-                // 最小尺寸：顶栏新加了「下载列表」，900 宽下不该挤成两行或盖住搜索框
-                f.ClientSize = Dpi.Sz(900, 620);
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "gallery-min");
-                f.ClientSize = Dpi.Sz(1180, 780);
-                Application.DoEvents();
-                // 空态：没搜到 / 搜索失败时应该有说明，不是一片背景色
-                f.EmptyForTest("搜索失败", "The operation has timed out");
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "gallery-empty");
-                f.Close();
-            }
-        }
-
-        /// <summary>
-        /// 诊断截图：下载列表窗口。空态一张、有记录一张 —— 这个窗口是新加的，
-        /// 按钮/列宽在 125% DPI 下挤不挤，只能看图确认。
-        /// </summary>
-        internal void DownsShot()
-        {
-            using (DownloadListForm f = new DownloadListForm())
-            {
-                f.Show();
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "downloads-real");      // 真实记录（有就显示，没有就是空态）
-                f.ShowEmptyForTest();
-                Application.DoEvents();
-                Shot(f, "downloads-empty");
-                f.FillSample();
-                Application.DoEvents();
-                Application.DoEvents();
-                Shot(f, "downloads");
-                f.Close();
-            }
-        }
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool PrintWindow(IntPtr hWnd, IntPtr hdcBlt, uint nFlags);
@@ -2705,42 +2507,6 @@ namespace Installer
             return true;
         }
 
-        /// <summary>
-        /// 顶栏「工坊」→ 画廊（用图找 MOD）。批量勾选下载那个列表窗口还在，从画廊右上角「批量下载」进。
-        /// 两种活法：不知道装什么时看图扫；知道要哪几个时进列表一次勾完。
-        /// </summary>
-        private void OpenWorkshop()
-        {
-            // 分类下拉要用方案树的位置表；树还没建的话这里先补上，否则下拉只有「全部物品」
-            EnsureTree();
-            treeView.Rebuild();
-
-            if (galleryWindow != null && !galleryWindow.IsDisposed) { galleryWindow.Activate(); return; }
-            galleryWindow = new GalleryForm(this);
-            galleryWindow.FormClosed += delegate { galleryWindow = null; };
-            galleryWindow.Show();
-        }
-
-        /// <summary>画廊里的「批量下载」调它；也能被外部自检直接调。</summary>
-        internal void ShowWorkshopList()
-        {
-            EnsureTree();
-            treeView.Rebuild();
-
-            if (wsWindow != null && !wsWindow.IsDisposed) { wsWindow.Activate(); return; }
-            wsWindow = new WorkshopForm(this);
-            wsWindow.FormClosed += delegate
-            {
-                int got = wsWindow.DownloadedCount;
-                wsWindow = null;
-                if (got > 0)
-                {
-                    Core.Log("INFO", "工坊：新下载 " + got + " 个，重扫库");
-                    RescanMods();
-                }
-            };
-            wsWindow.Show();
-        }
 
         /// <summary>手动重扫：库或游戏目录在别处被改过（别人手动丢过 vpk、装了一半），点一下重读。</summary>
         internal void RescanMods()
@@ -4066,11 +3832,9 @@ namespace Installer
             const int settingsW = 60;
             const int viewW = 56;       // 台面 ⇄ 方案树
             const int panelW = 56;      // 左栏抽屉
-            const int wsW = 64;         // 工坊导入
             const int topGap = 8;
             int settingsX = W - Theme.M - settingsW;
-            int wsX = settingsX - topGap - wsW;
-            int panelX = wsX - topGap - panelW;
+            int panelX = settingsX - topGap - panelW;
             int viewX = panelX - topGap - viewW;
             int findX = viewX - topGap - findW;
             int browseX = findX - topGap - browseW;
@@ -4080,7 +3844,6 @@ namespace Installer
             btnSettings.Left = Dpi.S(settingsX);
             btnView.Left = Dpi.S(viewX);
             btnPanel.Left = Dpi.S(panelX);
-            if (btnWorkshop != null) btnWorkshop.Left = Dpi.S(wsX);
 
             // 底部：右边一组（工具 + 次要 + 主操作），「一键还原」单独钉在左下角
             btnOpen.Left = Dpi.S(W - Theme.M - 104);
@@ -4148,7 +3911,7 @@ namespace Installer
                 { bad++; Core.Log("FAIL", tag + "「停止剩余」压住了「开始安装」"); }
 
                 // 顶部：设置 ← 抽屉 ← 台面 ← 自动找 ← 浏览（从左到右依次右移）
-                FlatButton[] top = new FlatButton[] { btnBrowse, btnFind, btnView, btnPanel, btnWorkshop, btnSettings };
+                FlatButton[] top = new FlatButton[] { btnBrowse, btnFind, btnView, btnPanel, btnSettings };
                 if (btnSettings.Left + Dpi.S(60) > W - m + 1) { bad++; Core.Log("FAIL", tag + "「设置」出窗"); }
                 for (int i = 1; i < top.Length; i++)
                     if (top[i].Left <= top[i - 1].Left + Dpi.S(56)) { bad++; Core.Log("FAIL", tag + "顶部按钮叠在一起：" + top[i].Text); }
