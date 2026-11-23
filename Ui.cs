@@ -97,7 +97,7 @@ namespace Installer
             // Build 位为 0 的不显示（2.59.0.0 → v2.59），有修订号时才带上（2.59.1 → v2.59.1）。
             Version ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             string verText = ver.Major + "." + ver.Minor + (ver.Build > 0 ? "." + ver.Build : "");
-            Text = "L4D2 MOD 管理工具  v" + verText;
+            Text = "L4D2 USB Mod Importer  v" + verText;
             // 一开始就开够大：右栏要放下方案树（左边位置 + 右边候选），窄了列会挤成一团
             // 尺寸全部按设计值 × DPI 比例算：WorkingArea 是物理像素，设计值是 96dpi 下的数
             Theme.UseDpi(this);

@@ -60,7 +60,7 @@ namespace Installer
             this.owner = owner;
             pendingRoot = Core.ModRoot;
 
-            Text = Lang.S("设置 · L4D2 MOD 管理工具");
+            Text = Lang.S("设置 · L4D2 USB Mod Importer");
             Theme.UseDpi(this);
             ClientSize = Dpi.Sz(620, 856);
             Font = Theme.UI;

@@ -37,7 +37,7 @@ namespace Installer
                 try
                 {
                     MessageBox.Show("出错了，已经写进日志。\r\n\r\n" + e.Exception.Message + "\r\n\r\n日志目录：" + Core.LogDir,
-                        "L4D2 MOD 管理工具", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "L4D2 USB Mod Importer", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch { }
             };

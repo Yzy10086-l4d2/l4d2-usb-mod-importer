@@ -562,7 +562,7 @@ namespace Installer
             try
             {
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine("# L4D2 MOD 管理工具 配置（勾选记忆）。删掉这个文件 = 恢复默认。");
+                sb.AppendLine("# L4D2 USB Mod Importer 配置（勾选记忆）。删掉这个文件 = 恢复默认。");
                 sb.AppendLine("[general]");
                 sb.AppendLine("GameRoot=" + Cfg.GameRoot);
                 sb.AppendLine("LastRun=" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));

@@ -252,7 +252,7 @@ namespace Installer
             // 信息优先级：正在做什么 > 提示 > 应用名。
             // 品牌是标识不是标题，用小字；步骤才是这段时间里唯一在变的东西，放大。
             string ver = VersionLabel();
-            string brandText = ver.Length > 0 ? "L4D2 MOD 管理工具  ·  " + ver : "L4D2 MOD 管理工具";
+            string brandText = ver.Length > 0 ? "L4D2 USB Mod Importer  ·  " + ver : "L4D2 USB Mod Importer";
             DrawText(g, brandText, Theme.UISmall, new Rectangle(pad, top, w, Dpi.S(16)), Theme.Ink3,
                 StringAlignment.Center, StringAlignment.Near);
 
